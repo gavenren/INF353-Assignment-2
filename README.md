@@ -1,1 +1,1157 @@
 # INF353-Assignment-2
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmilePath – iOS Prototype v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0D1117; --ink2:#1E2A38; --ink3:#2E3D50;
+  --mist:#F4F7FA; --mist2:#E8EEF5; --mist3:#D5E0ED;
+  --blue:#1A6CF6; --blue-dark:#1155CC; --blue-pale:#EAF1FF; --blue-mid:#C4D9FF;
+  --teal:#0DB4B9; --teal-pale:#E0F9FA;
+  --green:#0CAF60; --green-pale:#DCF5EA;
+  --amber:#F59E0B; --amber-pale:#FEF3C7;
+  --red:#E53E3E; --red-pale:#FFF0F0;
+  --purple:#7C3AED; --purple-pale:#EDE9FE;
+  --white:#FFFFFF;
+  --border:rgba(0,0,0,0.07); --border2:rgba(0,0,0,0.12);
+  --sh0:0 1px 3px rgba(0,0,0,0.06);
+  --sh1:0 2px 8px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
+  --sh2:0 8px 24px rgba(0,0,0,0.10),0 2px 6px rgba(0,0,0,0.06);
+  --sh3:0 20px 60px rgba(0,0,0,0.18),0 6px 16px rgba(0,0,0,0.08);
+  --r0:6px; --r1:10px; --r2:14px; --r3:20px; --r4:28px; --rf:9999px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#060D18;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:48px 20px 80px;gap:28px;-webkit-font-smoothing:antialiased;}
+
+/* header */
+.hdr{text-align:center;color:#fff;}
+.hdr-logo{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:var(--rf);padding:8px 18px;margin-bottom:18px;}
+.hdr-logo-icon{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--blue),var(--teal));display:flex;align-items:center;justify-content:center;}
+.hdr-logo-icon svg{width:14px;height:14px;}
+.hdr-logo span{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:white;}
+.hdr h1{font-family:'Fraunces',serif;font-size:28px;font-weight:700;letter-spacing:-0.6px;}
+.hdr p{font-size:12px;color:rgba(255,255,255,0.38);margin-top:6px;}
+
+/* phone */
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;}
+.phone-shell{width:393px;height:852px;background:#111;border-radius:55px;border:2px solid #2a2a2a;box-shadow:0 0 0 1px #000,inset 0 0 0 1px rgba(255,255,255,0.06),var(--sh3);position:relative;overflow:hidden;flex-shrink:0;}
+.phone-shell::before{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:120px;height:34px;background:#000;border-radius:20px;z-index:500;}
+.phone-screen{position:absolute;inset:0;border-radius:53px;overflow:hidden;background:var(--mist);}
+
+/* screens */
+.sp{position:absolute;inset:0;display:none;flex-direction:column;background:var(--mist);animation:fs .2s ease;}
+.sp.active{display:flex;}
+@keyframes fs{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* status bar */
+.sbar{height:56px;padding:16px 24px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--white);}
+.sbar-t{font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--ink);}
+.sbar-i{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink2);}
+.sbar-dark{background:var(--ink);}
+.sbar-dark .sbar-t{color:white;}
+.sbar-dark .sbar-i{color:rgba(255,255,255,0.6);}
+
+/* nav bar */
+.nbar{height:84px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:flex-start;padding-top:12px;flex-shrink:0;}
+.nbi{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.nbi svg{width:24px;height:24px;stroke-width:1.8;}
+.nbi span{font-size:10px;font-weight:600;letter-spacing:.2px;}
+.nbi.on svg,.nbi.on span{color:var(--blue);}
+.nbi:not(.on) svg,.nbi:not(.on) span{color:#9AAAB8;}
+
+/* nav header */
+.nhdr{background:var(--white);padding:14px 20px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.nhdr-title{flex:1;font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.2px;}
+.back{display:inline-flex;align-items:center;gap:2px;background:none;border:none;cursor:pointer;color:var(--blue);font-size:16px;font-weight:600;font-family:inherit;padding:0;flex-shrink:0;}
+.back svg{width:20px;height:20px;stroke-width:2.5;}
+
+/* scroll */
+.scrl{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.scrl::-webkit-scrollbar{display:none;}
+
+/* typography */
+.pg-title{font-family:'Fraunces',serif;font-size:30px;font-weight:700;color:var(--ink);letter-spacing:-.6px;line-height:1.15;}
+.pg-sub{font-size:14px;color:#7A8FA6;margin-top:5px;line-height:1.5;}
+.sec-hdr{font-size:12px;font-weight:700;color:#8FA0B4;text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px;}
+.sec-title{font-family:'Fraunces',serif;font-size:21px;font-weight:700;color:var(--ink);letter-spacing:-.4px;margin-bottom:12px;}
+
+/* card */
+.card{background:var(--white);border-radius:var(--r2);border:1px solid var(--border);box-shadow:var(--sh0);overflow:hidden;}
+.cp{padding:16px;}
+
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:var(--r2);cursor:pointer;font-family:inherit;font-weight:700;transition:all .18s;outline:none;-webkit-tap-highlight-color:transparent;letter-spacing:-.1px;}
+.bp{background:var(--blue);color:white;padding:17px 24px;font-size:16px;width:100%;box-shadow:0 4px 16px rgba(26,108,246,.32);}
+.bp:active{transform:scale(.98);background:var(--blue-dark);}
+.bs{background:var(--mist2);color:var(--ink2);padding:15px 24px;font-size:15px;width:100%;}
+.bd{background:var(--red-pale);color:var(--red);padding:15px 24px;font-size:15px;width:100%;}
+.bg{background:none;color:var(--blue);padding:8px 0;font-size:15px;}
+.bsm{padding:9px 16px;font-size:13px;border-radius:var(--r1);}
+
+/* form */
+.fld{margin-bottom:14px;}
+.fld label{display:block;font-size:12px;font-weight:700;color:#8FA0B4;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
+.fld input,.fld select,.fld textarea{width:100%;padding:14px 16px;background:var(--white);border:1.5px solid var(--mist3);border-radius:var(--r2);font-size:15px;color:var(--ink);font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none;}
+.fld input:focus,.fld select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,108,246,.12);}
+.fld textarea{resize:none;height:80px;font-size:14px;}
+
+/* steps */
+.step-bar{display:flex;gap:5px;margin-bottom:22px;}
+.step-seg{height:3px;flex:1;border-radius:2px;background:var(--mist3);transition:background .3s;}
+.step-seg.done{background:var(--blue);}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:var(--rf);margin-top:6px;letter-spacing:.2px;}
+.bg-green{background:var(--green-pale);color:#065F46;}
+.bg-amber{background:var(--amber-pale);color:#78350F;}
+.bg-blue{background:var(--blue-pale);color:var(--blue-dark);}
+.bg-red{background:var(--red-pale);color:var(--red);}
+.bg-purple{background:var(--purple-pale);color:var(--purple);}
+
+/* hero */
+.hero{background:linear-gradient(130deg,var(--blue) 0%,#0A8FD4 100%);border-radius:var(--r4);padding:22px 20px 20px;color:white;position:relative;overflow:hidden;margin-bottom:22px;}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:rgba(255,255,255,.08);border-radius:50%;}
+.hero::after{content:'';position:absolute;bottom:-24px;left:40px;width:90px;height:90px;background:rgba(255,255,255,.05);border-radius:50%;}
+.hero-ey{font-size:11px;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;}
+.hero-t{font-family:'Fraunces',serif;font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.2;}
+.hero-s{font-size:13px;opacity:.8;margin-top:5px;}
+.hero-acts{display:flex;gap:8px;margin-top:16px;position:relative;z-index:1;}
+.hbtn{border:none;border-radius:var(--r1);padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;letter-spacing:.1px;}
+.hbw{background:white;color:var(--blue-dark);}
+.hbg{background:rgba(255,255,255,.18);color:white;}
+
+/* appointment row */
+.ar{background:var(--white);border-radius:var(--r2);border:1px solid var(--border);padding:15px 16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:box-shadow .18s;box-shadow:var(--sh0);-webkit-tap-highlight-color:transparent;}
+.ar:active{box-shadow:none;}
+.ar-icon{width:46px;height:46px;border-radius:var(--r1);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ar-icon svg{width:22px;height:22px;}
+.ar-body{flex:1;min-width:0;}
+.ar-title{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.2px;}
+.ar-meta{font-size:13px;color:#7A8FA6;margin-top:3px;line-height:1.4;}
+
+/* list row */
+.lr{display:flex;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border);background:var(--white);cursor:pointer;transition:background .12s;-webkit-tap-highlight-color:transparent;}
+.lr:last-child{border-bottom:none;}
+.lr:active{background:var(--mist);}
+.lr-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-right:13px;flex-shrink:0;}
+.lr-icon svg{width:17px;height:17px;}
+.lr-body{flex:1;min-width:0;}
+.lr-title{font-size:15px;font-weight:600;color:var(--ink);}
+.lr-sub{font-size:13px;color:#7A8FA6;margin-top:1px;}
+.lr-chev svg{width:18px;height:18px;stroke-width:2;color:var(--mist3);}
+
+/* onboard */
+.ob{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;text-align:center;background:linear-gradient(160deg,var(--ink) 0%,var(--ink3) 100%);}
+.ob-tooth{font-size:68px;margin-bottom:22px;filter:drop-shadow(0 8px 24px rgba(26,108,246,.5));}
+.ob-title{font-family:'Fraunces',serif;font-size:34px;font-weight:700;color:white;letter-spacing:-1px;line-height:1.12;margin-bottom:13px;}
+.ob-sub{font-size:15px;color:rgba(255,255,255,.55);line-height:1.65;margin-bottom:42px;}
+.ob1{background:var(--blue);color:white;border:none;border-radius:var(--r2);padding:17px 32px;font-size:16px;font-weight:700;width:100%;cursor:pointer;font-family:inherit;margin-bottom:11px;box-shadow:0 6px 20px rgba(26,108,246,.4);}
+.ob2{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border:1.5px solid rgba(255,255,255,.12);border-radius:var(--r2);padding:16px 32px;font-size:16px;font-weight:600;width:100%;cursor:pointer;font-family:inherit;}
+
+/* success */
+.suc-ic{width:80px;height:80px;border-radius:40px;background:var(--green-pale);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+.suc-ic svg{width:38px;height:38px;color:var(--green);stroke-width:2.5;}
+
+/* calendar */
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.cal-month{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--ink);}
+.cal-nav{display:flex;gap:6px;}
+.cal-nav button{background:var(--mist2);border:none;border-radius:8px;padding:5px 10px;font-size:16px;cursor:pointer;color:var(--ink2);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-dl{text-align:center;font-size:11px;font-weight:700;color:#9AAAB8;padding:5px 0;}
+.cal-d{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;color:var(--ink2);transition:all .15s;font-weight:500;position:relative;}
+.cal-d:not(.disabled):not(.empty):hover{background:var(--mist2);}
+.cal-d.today{background:var(--blue);color:white;font-weight:800;}
+.cal-d.sel{background:var(--blue-pale);color:var(--blue-dark);font-weight:700;border:1.5px solid var(--blue);}
+.cal-d.has-appt::after{content:'';width:4px;height:4px;border-radius:2px;background:var(--blue);position:absolute;bottom:2px;left:50%;transform:translateX(-50%);}
+.cal-d.empty,.cal-d.disabled{cursor:default;}
+.cal-d.disabled{color:var(--mist3);}
+
+/* slots */
+.slots{display:flex;flex-wrap:wrap;gap:9px;}
+.slot{padding:10px 15px;border-radius:var(--r1);font-size:13px;font-weight:600;cursor:pointer;background:var(--white);border:1.5px solid var(--mist3);color:var(--ink2);transition:all .15s;}
+.slot.on{background:var(--blue-pale);border-color:var(--blue);color:var(--blue-dark);}
+.slot.off{background:var(--mist);color:#B0BEC5;cursor:default;border-color:var(--mist2);}
+
+/* dentist */
+.dc{background:var(--white);border-radius:var(--r2);border:1.5px solid var(--mist3);padding:14px 16px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .15s;}
+.dc.on{border-color:var(--blue);background:var(--blue-pale);}
+.dav{width:46px;height:46px;border-radius:23px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;font-family:'Fraunces',serif;}
+
+/* map */
+.map-ph{border-radius:var(--r2);height:155px;background:linear-gradient(135deg,#C7DEFF 0%,#D4EFF9 50%,#C0E8F5 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.map-ph::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.4) 0,rgba(255,255,255,.4) 1px,transparent 1px,transparent 28px),repeating-linear-gradient(90deg,rgba(255,255,255,.4) 0,rgba(255,255,255,.4) 1px,transparent 1px,transparent 28px);}
+.map-pin{font-size:36px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));z-index:1;}
+
+/* profile header */
+.prof-hdr{background:linear-gradient(135deg,var(--ink) 0%,var(--ink3) 100%);padding:28px 20px 22px;color:white;display:flex;align-items:center;gap:16px;flex-shrink:0;}
+.prof-av{width:66px;height:66px;border-radius:33px;background:linear-gradient(135deg,var(--blue),var(--teal));display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:white;flex-shrink:0;}
+
+/* hours */
+.hr-row{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.hr-row:last-child{border-bottom:none;}
+.hr-day{color:#7A8FA6;font-weight:500;}
+.hr-time{color:var(--ink);font-weight:600;}
+.hr-today .hr-day{color:var(--blue);font-weight:700;}
+.hr-today .hr-time{color:var(--blue);}
+
+/* notice */
+.notice{border-radius:var(--r2);padding:13px 15px;font-size:13px;line-height:1.55;margin-bottom:14px;}
+.n-blue{background:var(--blue-pale);color:var(--blue-dark);border:1px solid var(--blue-mid);}
+.n-amber{background:var(--amber-pale);color:#78350F;border:1px solid #FDE68A;}
+.n-green{background:var(--green-pale);color:#065F46;border:1px solid #A7F3D0;}
+
+/* avatar button */
+.avbtn{width:38px;height:38px;border-radius:19px;background:linear-gradient(135deg,var(--blue),var(--teal));display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;border:none;position:relative;transition:transform .15s;}
+.avbtn:active{transform:scale(.93);}
+.avpip{position:absolute;top:-1px;right:-1px;width:10px;height:10px;border-radius:5px;background:var(--red);border:2px solid var(--mist);}
+
+/* quick action grid */
+.qag{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;}
+.qac{background:var(--white);border-radius:var(--r2);border:1px solid var(--border);padding:18px 16px;cursor:pointer;transition:box-shadow .18s;box-shadow:var(--sh0);-webkit-tap-highlight-color:transparent;}
+.qac:active{box-shadow:none;}
+.qac-em{font-size:26px;margin-bottom:10px;}
+.qac-lb{font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-.2px;line-height:1.3;}
+
+/* staff */
+.sc{display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border);background:var(--white);}
+.sc:last-child{border-bottom:none;}
+.sav{width:42px;height:42px;border-radius:21px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;font-family:'Fraunces',serif;}
+
+/* contact pills */
+.cpills{display:flex;gap:8px;margin-bottom:0;}
+.cpill{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--rf);padding:9px 16px;font-size:13px;font-weight:600;color:white;cursor:pointer;flex:1;justify-content:center;min-width:70px;}
+.cpill svg{width:16px;height:16px;}
+
+/* notification item */
+.ni{background:var(--white);border-radius:var(--r2);border:1px solid var(--border);padding:14px 15px;margin-bottom:10px;box-shadow:var(--sh0);display:flex;gap:12px;cursor:pointer;}
+.ni-dot{width:40px;height:40px;border-radius:var(--r1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;}
+.ni-body{flex:1;}
+.ni-title{font-size:14px;font-weight:700;color:var(--ink);}
+.ni-sub{font-size:13px;color:#7A8FA6;margin-top:3px;line-height:1.4;}
+.ni-time{font-size:11px;color:#B0BEC5;margin-top:4px;font-weight:600;}
+.unread{width:8px;height:8px;border-radius:4px;background:var(--blue);flex-shrink:0;margin-top:5px;}
+
+/* utils */
+.p20{padding:0 20px;}
+.pt20{padding-top:20px;}
+.pb24{padding-bottom:24px;}
+.mt20{margin-top:20px;}
+.mt14{margin-top:14px;}
+.mt10{margin-top:10px;}
+.mb16{margin-bottom:16px;}
+.mb10{margin-bottom:10px;}
+.gap10{display:flex;flex-direction:column;gap:10px;}
+.vsp{height:24px;}
+.divider{height:8px;background:var(--mist2);margin:4px -20px;}
+
+/* shortcut bar */
+.sc-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:500px;}
+.scb{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:var(--rf);padding:7px 15px;font-size:12px;color:rgba(255,255,255,.7);cursor:pointer;font-family:inherit;font-weight:600;transition:all .15s;}
+.scb:hover{background:rgba(255,255,255,.15);color:white;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">
+    <div class="hdr-logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2C9.5 2 7 4 7 7c0 2 1 4 2 5.5L10.5 20c.3 1.2.8 2 1.5 2s1.2-.8 1.5-2l.5-2h-.5l.5 2c.3 1.2.8 2 1.5 2s1.2-.8 1.5-2L18 12.5C19 11 20 9 20 7c0-3-2.5-5-5-5h-3z"/></svg>
+    </div>
+    <span>SmilePath</span>
+  </div>
+  <h1>iOS Prototype v2</h1>
+  <p>High-Fidelity Clickable Prototype · INF353H Winter 2026</p>
+</div>
+
+<div class="phone-wrap">
+<div class="phone-shell">
+<div class="phone-screen" id="ps">
+
+<!-- ══ ONBOARD ══ -->
+<div class="sp active" id="s-onboard">
+  <div class="ob">
+    <div class="ob-tooth">🦷</div>
+    <h1 class="ob-title">Your smile,<br>your schedule.</h1>
+    <p class="ob-sub">Book appointments, manage your dental care, and get timely reminders — all from your pocket.</p>
+    <button class="ob1" onclick="go('s-reg1')">Register as New Patient</button>
+    <button class="ob2" onclick="go('s-home')">Sign In as Existing Patient</button>
+  </div>
+</div>
+
+<!-- ══ REG 1 ══ -->
+<div class="sp" id="s-reg1">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="nhdr"><button class="back" onclick="go('s-onboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="nhdr-title">New Patient Registration</span></div>
+  <div class="scrl" style="padding:20px">
+    <div class="step-bar"><div class="step-seg done"></div><div class="step-seg"></div><div class="step-seg"></div></div>
+    <div class="pg-title">Personal Info</div><div class="pg-sub mb16">Step 1 of 3 — Let's get to know you.</div>
+    <div class="fld"><label>First Name</label><input value="Olivia"/></div>
+    <div class="fld"><label>Last Name</label><input value="Smith"/></div>
+    <div class="fld"><label>Date of Birth</label><input value="March 14, 1997"/></div>
+    <div class="fld"><label>Phone Number</label><input value="+1 (416) 555-0182"/></div>
+    <div class="fld"><label>Email Address</label><input value="olivia.smith@email.com"/></div>
+    <div class="notice n-blue">📋 A staff member will call you to complete your registration and schedule your first appointment.</div>
+    <button class="btn bp" onclick="go('s-reg2')">Continue →</button>
+    <div class="vsp"></div>
+  </div>
+</div>
+
+<!-- ══ REG 2 ══ -->
+<div class="sp" id="s-reg2">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="nhdr"><button class="back" onclick="go('s-reg1')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="nhdr-title">New Patient Registration</span></div>
+  <div class="scrl" style="padding:20px">
+    <div class="step-bar"><div class="step-seg done"></div><div class="step-seg done"></div><div class="step-seg"></div></div>
+    <div class="pg-title">Address</div><div class="pg-sub mb16">Step 2 of 3</div>
+    <div class="fld"><label>Street Address</label><input value="123 Queen St W"/></div>
+    <div class="fld"><label>City</label><input value="Toronto"/></div>
+    <div class="fld"><label>Province</label><select><option>Ontario</option><option>Quebec</option><option>British Columbia</option></select></div>
+    <div class="fld"><label>Postal Code</label><input value="M5H 2N2"/></div>
+    <button class="btn bp" onclick="go('s-reg3')">Continue →</button>
+    <div class="vsp"></div>
+  </div>
+</div>
+
+<!-- ══ REG 3 ══ -->
+<div class="sp" id="s-reg3">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="nhdr"><button class="back" onclick="go('s-reg2')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="nhdr-title">New Patient Registration</span></div>
+  <div class="scrl" style="padding:20px">
+    <div class="step-bar"><div class="step-seg done"></div><div class="step-seg done"></div><div class="step-seg done"></div></div>
+    <div class="pg-title">Health & Insurance</div><div class="pg-sub mb16">Step 3 of 3 — Almost done!</div>
+    <div class="fld"><label>Health Card Number (optional)</label><input placeholder="Ontario OHIP number"/></div>
+    <div class="fld"><label>Insurance Provider (optional)</label><input placeholder="e.g. Sun Life, Manulife"/></div>
+    <div class="fld"><label>Emergency Contact Name</label><input value="James Smith"/></div>
+    <div class="fld"><label>Emergency Contact Phone</label><input value="+1 (416) 555-0190"/></div>
+    <div class="fld"><label>Medical Notes / Allergies</label><textarea placeholder="Any allergies, medications, or conditions…"></textarea></div>
+    <button class="btn bp" onclick="go('s-reg-success')">Submit Registration</button>
+    <div class="vsp"></div>
+  </div>
+</div>
+
+<!-- ══ REG SUCCESS ══ -->
+<div class="sp" id="s-reg-success">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="scrl" style="padding:48px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+    <div class="suc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <div class="pg-title mb16">Registration<br>Submitted!</div>
+    <p class="pg-sub" style="margin-bottom:24px;">Our team will call you within 1 business day to complete your registration and book your first appointment.</p>
+    <div class="card" style="width:100%;margin-bottom:14px;"><div class="cp">
+      <div class="sec-hdr mb10">What Happens Next</div>
+      <div style="font-size:14px;color:#5A7189;line-height:1.7;">1. Staff calls you to verify your info<br>2. Initial appointment added to your calendar<br>3. Two confirmations sent:
+        <span class="badge bg-green" style="vertical-align:middle;margin-left:4px;">Registration ✓</span>
+        <span class="badge bg-blue" style="vertical-align:middle;margin-left:4px;">Appointment ✓</span>
+      </div>
+    </div></div>
+    <div class="card" style="width:100%;margin-bottom:28px;"><div class="cp">
+      <div class="sec-hdr">Confirmation Reference</div>
+      <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--blue);">SP-2026-04821</div>
+    </div></div>
+    <button class="btn bp" onclick="go('s-home')">Go to App →</button>
+  </div>
+</div>
+
+<!-- ══ HOME ══ -->
+<div class="sp" id="s-home">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div style="background:var(--white);padding:16px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+    <div>
+      <div style="font-size:13px;color:#7A8FA6;font-weight:500;">Good morning,</div>
+      <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--ink);letter-spacing:-.5px;line-height:1.2;">Olivia 👋</div>
+    </div>
+    <button class="avbtn" onclick="go('s-notifs')">O<span class="avpip" id="pip"></span></button>
+  </div>
+  <div class="scrl" style="padding:18px 20px 0;">
+    <!-- hero: shows next appointment; updates dynamically -->
+    <div id="home-hero" class="hero">
+      <div class="hero-ey">Next Appointment</div>
+      <div id="hh-title" class="hero-t">Dr. Emily Chen</div>
+      <div id="hh-sub" class="hero-s">Thu, June 5 · 9:00 AM · Cleaning &amp; Check-up</div>
+      <div class="hero-acts">
+        <button class="hbtn hbw" onclick="openDetail(0)">View Details</button>
+        <button class="hbtn hbg" onclick="openReschedule(0)">Reschedule</button>
+      </div>
+    </div>
+    <div class="sec-hdr">Quick Actions</div>
+    <div class="qag">
+      <div class="qac" onclick="go('s-book1')"><div class="qac-em">📅</div><div class="qac-lb">Book Appointment</div></div>
+      <div class="qac" onclick="go('s-schedule')"><div class="qac-em">🗓️</div><div class="qac-lb">My Schedule</div></div>
+      <div class="qac" onclick="go('s-office')"><div class="qac-em">🏥</div><div class="qac-lb">Office Info</div></div>
+      <div class="qac" onclick="go('s-profile')"><div class="qac-em">👤</div><div class="qac-lb">My Profile</div></div>
+    </div>
+    <div class="sec-hdr">Upcoming</div>
+    <div id="home-appt-list"></div>
+    <div class="vsp"></div>
+  </div>
+  <div class="nbar">
+    <div class="nbi on" onclick="go('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12L12 3l9 9M5 10v10h5v-6h4v6h5V10"/></svg><span>Home</span></div>
+    <div class="nbi" onclick="go('s-schedule')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Schedule</span></div>
+    <div class="nbi" onclick="go('s-book1')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg><span>Book</span></div>
+    <div class="nbi" onclick="go('s-office')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M9 21V9l6-4v16M3 7l6-4"/></svg><span>Office</span></div>
+    <div class="nbi" onclick="go('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div>
+  </div>
+</div>
+
+<!-- ══ NOTIFICATIONS ══ -->
+<div class="sp" id="s-notifs">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="nhdr"><button class="back" onclick="go('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="nhdr-title">Notifications</span><button class="btn bg bsm" style="font-size:12px;padding:6px 10px;" onclick="go('s-notifs')">Mark all read</button></div>
+  <div class="scrl" style="padding:16px 20px 0;">
+    <div class="sec-hdr mb10">Today</div>
+    <div class="ni" onclick="go('s-reg-success')"><div class="ni-dot" style="background:var(--green-pale);">✅</div><div class="ni-body"><div class="ni-title">Registration Submitted</div><div class="ni-sub">Your registration was received. Our team will call you within 1 business day.</div><div class="ni-time">Just now</div></div><div class="unread"></div></div>
+    <div class="ni" onclick="openDetail(0)"><div class="ni-dot" style="background:var(--blue-pale);">📅</div><div class="ni-body"><div class="ni-title">Appointment Confirmed</div><div class="ni-sub">Cleaning &amp; Check-up with Dr. Emily Chen confirmed for Thu, June 5 at 9:00 AM.</div><div class="ni-time">2 hours ago</div></div><div class="unread"></div></div>
+    <div class="sec-hdr mt20 mb10">This Week</div>
+    <div class="ni" onclick="openDetail(0)"><div class="ni-dot" style="background:var(--amber-pale);">⏰</div><div class="ni-body"><div class="ni-title">Appointment Reminder</div><div class="ni-sub">Your appointment with Dr. Emily Chen is tomorrow at 9:00 AM. Don't forget!</div><div class="ni-time">Yesterday · 5:00 PM</div></div></div>
+    <div class="ni" onclick="go('s-schedule')"><div class="ni-dot" style="background:var(--teal-pale);">📋</div><div class="ni-body"><div class="ni-title">Booking Request Received</div><div class="ni-sub">We received your booking request. Pending confirmation from the office.</div><div class="ni-time">Monday · 10:23 AM</div></div></div>
+    <div class="sec-hdr mt20 mb10">Earlier</div>
+    <div class="ni"><div class="ni-dot" style="background:var(--red-pale);">❌</div><div class="ni-body"><div class="ni-title">Cancellation Confirmed</div><div class="ni-sub">Your appointment on May 21 with Dr. Sofia Rossi has been cancelled as requested.</div><div class="ni-time">May 20 · 2:14 PM</div></div></div>
+    <div class="ni"><div class="ni-dot" style="background:var(--green-pale);">🔄</div><div class="ni-body"><div class="ni-title">Change Request Confirmed</div><div class="ni-sub">Your appointment has been moved to May 30 at 10:00 AM with Dr. Emily Chen.</div><div class="ni-time">May 14 · 9:00 AM</div></div></div>
+    <div class="vsp"></div>
+  </div>
+</div>
+
+<!-- ══ SCHEDULE ══ -->
+<div class="sp" id="s-schedule">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div style="background:var(--white);padding:16px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <div class="pg-title">My Schedule</div><div class="pg-sub">Manage your appointments</div>
+  </div>
+  <!-- calendar -->
+  <div style="background:var(--white);padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <div class="cal-hdr">
+      <div class="cal-month" id="sched-month-label">June 2026</div>
+      <div class="cal-nav"><button onclick="changeSchedMonth(-1)">‹</button><button onclick="changeSchedMonth(1)">›</button></div>
+    </div>
+    <div class="cal-grid" id="sched-cal-grid"></div>
+  </div>
+  <div class="scrl" style="padding:16px 20px 0;">
+    <div class="sec-hdr mb10">Upcoming</div>
+    <div id="sched-appt-list"></div>
+    <button class="btn bp mt10 mb16" onclick="go('s-book1')">+ Book New Appointment</button>
+    <div class="vsp"></div>
+  </div>
+  <div class="nbar">
+    <div class="nbi" onclick="go('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12L12 3l9 9M5 10v10h5v-6h4v6h5V10"/></svg><span>Home</span></div>
+    <div class="nbi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Schedule</span></div>
+    <div class="nbi" onclick="go('s-book1')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg><span>Book</span></div>
+    <div class="nbi" onclick="go('s-office')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M9 21V9l6-4v16M3 7l6-4"/></svg><span>Office</span></div>
+    <div class="nbi" onclick="go('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div>
+  </div>
+</div>
+
+<!-- ══ APPT DETAIL ══ -->
+<div class="sp" id="s-appt-detail">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="nhdr"><button class="back" onclick="go('s-schedule')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="nhdr-title">Appointment Details</span></div>
+  <div class="scrl" style="padding:20px;">
+    <div id="detail-card" style="border-radius:var(--r4);padding:24px 22px;color:white;margin-bottom:18px;position:relative;overflow:hidden;background:linear-gradient(130deg,var(--blue) 0%,#0A8FD4 100%);">
+      <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(255,255,255,.08);border-radius:50%;"></div>
+      <div id="detail-status-label" style="font-size:11px;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;"></div>
+      <div id="detail-type" style="font-family:'Fraunces',serif;font-size:26px;font-weight:700;letter-spacing:-.5px;line-height:1.2;"></div>
+      <div id="detail-date" style="font-size:15px;opacity:.85;margin-top:8px;"></div>
+      <div id="detail-time" style="font-family:'Fraunces',serif;font-size:32px;font-weight:700;margin-top:2px;letter-spacing:-.5px;"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <span style="background:rgba(255,255,255,.18);border-radius:var(--rf);padding:4px 12px;font-size:12px;font-weight:600;">45 minutes</span>
+        <span id="detail-badge-main" class="badge"></span>
+      </div>
+      <div id="detail-pending-note" style="margin-top:10px;background:rgba(255,255,255,.15);border-radius:8px;padding:8px 12px;font-size:12px;display:none;"></div>
+    </div>
+    <div class="card mb16">
+      <div class="lr" style="cursor:default;"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="lr-body"><div class="lr-sub">Dentist</div><div id="detail-dentist" class="lr-title"></div></div></div>
+      <div class="lr" style="cursor:default;"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M3 21h18M9 21V9l6-4v16M3 7l6-4"/></svg></div><div class="lr-body"><div class="lr-sub">Location</div><div class="lr-title">SmilePath Dental — Bay St</div></div></div>
+      <div class="lr" style="cursor:default;border-bottom:none;"><div id="detail-status-icon" class="lr-icon" style="background:var(--green-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div class="lr-body"><div class="lr-sub">Status</div><div id="detail-status-text" class="lr-title"></div></div></div>
+    </div>
+    <div id="detail-actions" class="sec-hdr mb10">Manage This Appointment</div>
+    <div class="gap10" id="detail-btns">
+      <button class="btn bs" id="btn-reschedule" onclick="openReschedule(currentDetail)">Request a Change</button>
+      <button class="btn bd" id="btn-cancel" onclick="openCancel(currentDetail)">Cancel Appointment</button>
+    </div>
+    <div class="vsp"></div>
+  </div>
+</div>
+
+<!-- ══ CANCEL ══ -->
+<div class="sp" id="s-cancel">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="nhdr"><button class="back" onclick="go('s-appt-detail')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="nhdr-title">Cancel Appointment</span></div>
+  <div class="scrl" style="padding:24px 20px;">
+    <div style="text-align:center;margin-bottom:26px;">
+      <div style="font-size:52px;margin-bottom:14px;">⚠️</div>
+      <div class="pg-title mb10">Cancel this appointment?</div>
+      <p class="pg-sub">This sends a cancellation request to the office. Your slot is held until the office confirms.</p>
+    </div>
+    <div class="card mb16"><div class="cp">
+      <div id="cancel-appt-info" style="font-weight:700;font-size:15px;color:var(--ink);"></div>
+    </div></div>
+    <div class="fld"><label>Reason for Cancellation</label>
+      <select><option value="">-- Optional --</option><option>Scheduling conflict</option><option>Feeling unwell</option><option>No longer needed</option><option>Other</option></select>
+    </div>
+    <div class="notice n-amber mb16">Once our team confirms, you'll receive a notification and the appointment will be removed from your calendar.</div>
+    <div class="gap10">
+      <button class="btn bd" onclick="confirmCancel()">Yes, Request Cancellation</button>
+      <button class="btn bs" onclick="go('s-appt-detail')">Keep My Appointment</button>
+    </div>
+    <div class="vsp"></div>
+  </div>
+</div>
+
+<!-- ══ CANCEL SUCCESS ══ -->
+<div class="sp" id="s-cancel-success">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="scrl" style="padding:48px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+    <div style="width:80px;height:80px;border-radius:40px;background:var(--amber-pale);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px;">📋</div>
+    <div class="pg-title mb10">Cancellation<br>Requested</div>
+    <p class="pg-sub" style="margin-bottom:24px;">We've received your request. Our team will confirm it and you'll be notified. The appointment now shows <strong>Pending Cancellation</strong>.</p>
+    <div class="notice n-blue" style="width:100%;text-align:left;margin-bottom:24px;">Once confirmed by the office, the appointment will be removed from your calendar.</div>
+    <button class="btn bp" onclick="go('s-home')">Back to Home</button>
+  </div>
+</div>
+
+<!-- ══ RESCHEDULE ══ -->
+<div class="sp" id="s-reschedule">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="nhdr"><button class="back" onclick="go('s-appt-detail')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="nhdr-title">Request a Change</span></div>
+  <div class="scrl" style="padding:20px;">
+    <div class="pg-title mb10">Suggest a New Time</div>
+    <p class="pg-sub" style="margin-bottom:20px;">Our team will review your request and confirm the updated appointment.</p>
+    <div class="sec-hdr mb10">Current Appointment</div>
+    <div class="card mb20"><div class="cp" style="display:flex;justify-content:space-between;align-items:center;">
+      <div><div id="resched-current" style="font-weight:700;font-size:15px;color:var(--ink);"></div><div id="resched-dentist" style="font-size:13px;color:#7A8FA6;margin-top:3px;"></div></div>
+      <span class="badge bg-green">Confirmed</span>
+    </div></div>
+    <!-- reschedule calendar -->
+    <div class="cal-hdr"><div class="cal-month" id="rs-month-label">June 2026</div><div class="cal-nav"><button onclick="changeRsMonth(-1)">‹</button><button onclick="changeRsMonth(1)">›</button></div></div>
+    <div class="cal-grid mb14" id="rs-cal-grid"></div>
+    <div class="sec-hdr mb10">Preferred Time</div>
+    <div class="slots mb20" id="rs-slots">
+      <div class="slot on">9:00 AM</div><div class="slot">10:00 AM</div><div class="slot">11:00 AM</div>
+      <div class="slot off">12:00 PM</div><div class="slot">1:00 PM</div><div class="slot">2:30 PM</div>
+    </div>
+    <div class="fld"><label>Additional Notes</label><textarea placeholder="Anything specific…"></textarea></div>
+    <div class="notice n-blue mb16">A staff member will confirm the change and update your calendar. You'll be notified.</div>
+    <button class="btn bp" onclick="confirmReschedule()">Submit Change Request</button>
+    <div class="vsp"></div>
+  </div>
+</div>
+
+<!-- ══ RESCHEDULE SUCCESS ══ -->
+<div class="sp" id="s-reschedule-success">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="scrl" style="padding:48px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+    <div class="suc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <div class="pg-title mb10">Change Request<br>Submitted!</div>
+    <p class="pg-sub" style="margin-bottom:24px;">Our team will confirm the new time and update your calendar. The appointment now shows <strong>Pending Reschedule</strong>.</p>
+    <div class="card" style="width:100%;margin-bottom:28px;"><div class="cp">
+      <div class="sec-hdr">Requested New Time</div>
+      <div id="rs-success-info" style="font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--blue);"></div>
+    </div></div>
+    <button class="btn bp" onclick="go('s-schedule')">View Schedule</button>
+  </div>
+</div>
+
+<!-- ══ BOOK 1 – DENTIST ══ -->
+<div class="sp" id="s-book1">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="nhdr"><button class="back" onclick="go('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="nhdr-title">Book Appointment</span></div>
+  <div class="scrl" style="padding:20px;">
+    <div class="step-bar"><div class="step-seg done"></div><div class="step-seg"></div><div class="step-seg"></div></div>
+    <div class="pg-title">Choose Your Dentist</div><div class="pg-sub mb20">Step 1 of 3</div>
+    <div class="dc on" id="dc-ec" onclick="selectDent('ec')"><div class="dav" style="background:#DBEAFE;color:#1D4ED8;">EC</div><div><div style="font-size:15px;font-weight:700;color:var(--ink);">Dr. Emily Chen</div><div style="font-size:13px;color:#7A8FA6;">General Dentist · 8 yrs</div></div><span id="ck-ec" style="color:var(--blue);margin-left:auto;font-size:18px;">✓</span></div>
+    <div class="dc" id="dc-ml" onclick="selectDent('ml')"><div class="dav" style="background:#D1FAE5;color:#065F46;">ML</div><div><div style="font-size:15px;font-weight:700;color:var(--ink);">Dr. Marcus Lee</div><div style="font-size:13px;color:#7A8FA6;">Orthodontist · 12 yrs</div></div><span id="ck-ml" style="display:none;color:var(--blue);margin-left:auto;font-size:18px;">✓</span></div>
+    <div class="dc" id="dc-sr" onclick="selectDent('sr')"><div class="dav" style="background:#FEF3C7;color:#78350F;">SR</div><div><div style="font-size:15px;font-weight:700;color:var(--ink);">Dr. Sofia Rossi</div><div style="font-size:13px;color:#7A8FA6;">Pediatric Dentist · 6 yrs</div></div><span id="ck-sr" style="display:none;color:var(--blue);margin-left:auto;font-size:18px;">✓</span></div>
+    <button class="btn bp mt20" onclick="go('s-book2')">Continue →</button>
+    <div class="vsp"></div>
+  </div>
+</div>
+
+<!-- ══ BOOK 2 – DATE/TIME ══ -->
+<div class="sp" id="s-book2">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="nhdr"><button class="back" onclick="go('s-book1')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="nhdr-title">Book Appointment</span></div>
+  <div class="scrl" style="padding:20px;">
+    <div class="step-bar"><div class="step-seg done"></div><div class="step-seg done"></div><div class="step-seg"></div></div>
+    <div class="pg-title">Pick a Date &amp; Time</div><div class="pg-sub mb20">Step 2 of 3 — When works for you?</div>
+    <div class="cal-hdr"><div class="cal-month" id="book-month-label">June 2026</div><div class="cal-nav"><button onclick="changeBookMonth(-1)">‹</button><button onclick="changeBookMonth(1)">›</button></div></div>
+    <div class="cal-grid mb20" id="book-cal-grid"></div>
+    <div class="sec-hdr mb10" id="book-slots-label">Available Times</div>
+    <div class="slots mb20" id="book-slots">
+      <div class="slot">9:00 AM</div><div class="slot on">10:00 AM</div><div class="slot">11:00 AM</div>
+      <div class="slot off">12:00 PM</div><div class="slot">2:30 PM</div><div class="slot">4:00 PM</div>
+    </div>
+    <button class="btn bp" onclick="go('s-book3')">Continue →</button>
+    <div class="vsp"></div>
+  </div>
+</div>
+
+<!-- ══ BOOK 3 – CONFIRM ══ -->
+<div class="sp" id="s-book3">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="nhdr"><button class="back" onclick="go('s-book2')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="nhdr-title">Book Appointment</span></div>
+  <div class="scrl" style="padding:20px;">
+    <div class="step-bar"><div class="step-seg done"></div><div class="step-seg done"></div><div class="step-seg done"></div></div>
+    <div class="pg-title">Confirm Request</div><div class="pg-sub mb20">Step 3 of 3 — Review your booking details</div>
+    <div class="card mb16">
+      <div class="lr" style="cursor:default;"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="lr-body"><div class="lr-sub">Dentist</div><div id="book3-dentist" class="lr-title">Dr. Emily Chen</div></div></div>
+      <div class="lr" style="cursor:default;"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div class="lr-body"><div class="lr-sub">Date &amp; Time</div><div id="book3-datetime" class="lr-title"></div></div></div>
+      <div class="lr" style="cursor:default;border-bottom:none;"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg></div><div class="lr-body"><div class="lr-sub">Duration</div><div class="lr-title">45 minutes</div></div></div>
+    </div>
+    <div class="fld"><label>Type of Visit</label><select><option>Cleaning &amp; Check-up</option><option>Filling</option><option>Tooth Extraction</option><option>Whitening</option><option>Orthodontic Consultation</option><option>Emergency / Pain</option></select></div>
+    <div class="fld"><label>Notes (optional)</label><textarea placeholder="Any concerns or special requests…"></textarea></div>
+    <div class="notice n-blue mb16">A staff member will complete your booking and add it to your calendar. You'll receive a confirmation notification.</div>
+    <button class="btn bp" onclick="submitBooking()">Submit Booking Request</button>
+    <div class="vsp"></div>
+  </div>
+</div>
+
+<!-- ══ BOOK SUCCESS ══ -->
+<div class="sp" id="s-book-success">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="scrl" style="padding:48px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+    <div class="suc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <div class="pg-title mb10">Request Sent!</div>
+    <p class="pg-sub" style="margin-bottom:24px;">We'll confirm your booking and add it to your calendar. The new appointment now appears in your Schedule with <strong>Pending Confirmation</strong>.</p>
+    <div class="card" style="width:100%;margin-bottom:28px;"><div class="cp">
+      <div class="sec-hdr">Request Reference</div>
+      <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--blue);">BK-2026-07812</div>
+      <div id="book-success-info" style="font-size:13px;color:#7A8FA6;margin-top:8px;"></div>
+    </div></div>
+    <div class="gap10" style="width:100%;">
+      <button class="btn bp" onclick="go('s-schedule')">View My Schedule</button>
+      <button class="btn bs" onclick="go('s-home')">Back to Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ OFFICE ══ -->
+<div class="sp" id="s-office">
+  <div class="sbar sbar-dark"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div style="background:linear-gradient(135deg,var(--ink) 0%,var(--ink3) 100%);padding:22px 20px 20px;color:white;flex-shrink:0;">
+    <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:700;letter-spacing:-.5px;">SmilePath Dental</div>
+    <div style="font-size:13px;opacity:.65;margin-top:4px;">220 Bay Street, Suite 400 · Toronto, ON M5J 2W4</div>
+    <div class="cpills" style="margin-top:14px;">
+      <div class="cpill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2a2 2 0 00-2 2v.5c0 7.456 6.044 13.5 13.5 13.5H18a2 2 0 002-2v-1.5l-4-1-1.5 1.5a10.5 10.5 0 01-5-5L11 8.5 10 4.5 6 2z"/></svg>Call</div>
+      <div class="cpill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l9 6 9-6M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"/></svg>Email</div>
+      <div class="cpill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>Map</div>
+    </div>
+  </div>
+  <div class="scrl" style="padding:16px 20px 0;">
+    <div class="map-ph mb16"><div class="map-pin">📍</div></div>
+    <div class="sec-title">Hours of Operation</div>
+    <div class="card mb16" style="padding:0 16px;">
+      <div class="hr-row hr-today"><span class="hr-day">Thursday (Today)</span><span class="hr-time">8:00 AM – 6:00 PM</span></div>
+      <div class="hr-row"><span class="hr-day">Monday</span><span class="hr-time">8:00 AM – 6:00 PM</span></div>
+      <div class="hr-row"><span class="hr-day">Tuesday</span><span class="hr-time">8:00 AM – 6:00 PM</span></div>
+      <div class="hr-row"><span class="hr-day">Wednesday</span><span class="hr-time">8:00 AM – 7:00 PM</span></div>
+      <div class="hr-row"><span class="hr-day">Friday</span><span class="hr-time">8:00 AM – 5:00 PM</span></div>
+      <div class="hr-row"><span class="hr-day">Saturday</span><span class="hr-time">9:00 AM – 3:00 PM</span></div>
+      <div class="hr-row"><span class="hr-day">Sunday</span><span class="hr-time" style="color:var(--mist3);">Closed</span></div>
+    </div>
+    <div class="sec-title">Dentists</div>
+    <div class="card mb16">
+      <div class="sc"><div class="sav" style="background:#DBEAFE;color:#1D4ED8;">EC</div><div><div style="font-size:15px;font-weight:600;color:var(--ink);">Dr. Emily Chen</div><div style="font-size:12px;color:#7A8FA6;">General Dentist · DDS, U of T</div></div></div>
+      <div class="sc"><div class="sav" style="background:#D1FAE5;color:#065F46;">ML</div><div><div style="font-size:15px;font-weight:600;color:var(--ink);">Dr. Marcus Lee</div><div style="font-size:12px;color:#7A8FA6;">Orthodontist · DMD, McGill</div></div></div>
+      <div class="sc"><div class="sav" style="background:#FEF3C7;color:#78350F;">SR</div><div><div style="font-size:15px;font-weight:600;color:var(--ink);">Dr. Sofia Rossi</div><div style="font-size:12px;color:#7A8FA6;">Pediatric Dentist · DDS, Western</div></div></div>
+    </div>
+    <div class="sec-title">Dental Technicians</div>
+    <div class="card mb16">
+      <div class="sc"><div class="sav" style="background:#F3E8FF;color:#6B21A8;">JP</div><div><div style="font-size:15px;font-weight:600;color:var(--ink);">Jamie Park</div><div style="font-size:12px;color:#7A8FA6;">Registered Dental Hygienist</div></div></div>
+      <div class="sc"><div class="sav" style="background:#FFEDD5;color:#C2410C;">TN</div><div><div style="font-size:15px;font-weight:600;color:var(--ink);">Taylor Nguyen</div><div style="font-size:12px;color:#7A8FA6;">Dental Technician · Prosthetics</div></div></div>
+    </div>
+    <div class="sec-title">Office Staff</div>
+    <div class="card mb16">
+      <div class="sc"><div class="sav" style="background:#FEE2E2;color:#B91C1C;">AP</div><div><div style="font-size:15px;font-weight:600;color:var(--ink);">Aisha Patel</div><div style="font-size:12px;color:#7A8FA6;">Office Manager</div></div></div>
+      <div class="sc"><div class="sav" style="background:#CFFAFE;color:#0E7490;">LM</div><div><div style="font-size:15px;font-weight:600;color:var(--ink);">Lena Moreau</div><div style="font-size:12px;color:#7A8FA6;">Receptionist</div></div></div>
+      <div class="sc"><div class="sav" style="background:#ECFDF5;color:#065F46;">BW</div><div><div style="font-size:15px;font-weight:600;color:var(--ink);">Ben Wilson</div><div style="font-size:12px;color:#7A8FA6;">Patient Coordinator</div></div></div>
+    </div>
+    <div class="sec-title">Contact Information</div>
+    <div class="card mb16">
+      <div class="lr" style="cursor:default;"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M6 2a2 2 0 00-2 2v.5c0 7.456 6.044 13.5 13.5 13.5H18a2 2 0 002-2v-1.5l-4-1-1.5 1.5a10.5 10.5 0 01-5-5L11 8.5 10 4.5 6 2z"/></svg></div><div class="lr-body"><div class="lr-sub">Phone</div><div class="lr-title">(416) 555-0100</div></div></div>
+      <div class="lr" style="cursor:default;"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M3 8l9 6 9-6M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"/></svg></div><div class="lr-body"><div class="lr-sub">Email</div><div class="lr-title"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="620a070e0e0d22110f0b0e071203160a06070c16030e160d4c0103">[email&#160;protected]</a></div></div></div>
+      <div class="lr" style="cursor:default;border-bottom:none;"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg></div><div class="lr-body"><div class="lr-sub">Address</div><div class="lr-title">220 Bay St, Suite 400, Toronto ON</div></div></div>
+    </div>
+    <div class="vsp"></div>
+  </div>
+  <div class="nbar">
+    <div class="nbi" onclick="go('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12L12 3l9 9M5 10v10h5v-6h4v6h5V10"/></svg><span>Home</span></div>
+    <div class="nbi" onclick="go('s-schedule')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Schedule</span></div>
+    <div class="nbi" onclick="go('s-book1')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg><span>Book</span></div>
+    <div class="nbi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M9 21V9l6-4v16M3 7l6-4"/></svg><span>Office</span></div>
+    <div class="nbi" onclick="go('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div>
+  </div>
+</div>
+
+<!-- ══ PROFILE ══ -->
+<div class="sp" id="s-profile">
+  <div class="sbar sbar-dark"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="prof-hdr"><div class="prof-av">O</div><div><div id="prof-display-name" style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;letter-spacing:-.4px;">Olivia Smith</div><div style="font-size:13px;opacity:.6;margin-top:3px;">Patient since 2024 · Dr. Emily Chen</div><span class="badge bg-green" style="margin-top:6px;">● Active Patient</span></div></div>
+  <div class="scrl" style="padding:16px 20px 0;">
+    <div class="sec-hdr mb10">My Information</div>
+    <div class="card mb16">
+      <div class="lr" onclick="openEditProfile()"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="lr-body"><div class="lr-sub">Full Name</div><div id="prof-display-fullname" class="lr-title">Olivia Smith</div></div><div class="lr-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg></div></div>
+      <div class="lr" onclick="openEditProfile()"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M3 8l9 6 9-6M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"/></svg></div><div class="lr-body"><div class="lr-sub">Email</div><div id="prof-display-email" class="lr-title">olivia.smith@email.com</div></div><div class="lr-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg></div></div>
+      <div class="lr" onclick="openEditProfile()"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M6 2a2 2 0 00-2 2v.5c0 7.456 6.044 13.5 13.5 13.5H18a2 2 0 002-2v-1.5l-4-1-1.5 1.5a10.5 10.5 0 01-5-5L11 8.5 10 4.5 6 2z"/></svg></div><div class="lr-body"><div class="lr-sub">Phone</div><div id="prof-display-phone" class="lr-title">+1 (416) 555-0182</div></div><div class="lr-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg></div></div>
+      <div class="lr" onclick="openEditProfile()" style="border-bottom:none;"><div class="lr-icon" style="background:var(--blue-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg></div><div class="lr-body"><div class="lr-sub">Address</div><div id="prof-display-address" class="lr-title">123 Queen St W, Toronto ON</div></div><div class="lr-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg></div></div>
+    </div>
+    <div class="sec-hdr mb10">Dental Info</div>
+    <div class="card mb16">
+      <div class="lr" style="cursor:default;"><div class="lr-icon" style="background:#DBEAFE;"><div style="font-family:'Fraunces',serif;font-size:12px;font-weight:700;color:#1D4ED8;">EC</div></div><div class="lr-body"><div class="lr-sub">My Dentist</div><div class="lr-title">Dr. Emily Chen</div></div></div>
+      <div class="lr" style="cursor:default;"><div class="lr-icon" style="background:var(--green-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div class="lr-body"><div class="lr-sub">Last Visit</div><div class="lr-title">December 10, 2025</div></div></div>
+      <div class="lr" style="cursor:default;border-bottom:none;"><div class="lr-icon" style="background:var(--teal-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div class="lr-body"><div class="lr-sub">Next Appointment</div><div class="lr-title">Thu, June 5 · 9:00 AM</div></div></div>
+    </div>
+    <div class="sec-hdr mb10">Account</div>
+    <div class="card mb16">
+      <div class="lr" onclick="go('s-edit-profile')"><div class="lr-icon" style="background:var(--mist2);"><svg viewBox="0 0 24 24" fill="none" stroke="#7A8FA6" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><div class="lr-body"><div class="lr-title">Edit Profile</div></div><div class="lr-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg></div></div>
+      <div class="lr" onclick="go('s-notifs')"><div class="lr-icon" style="background:var(--mist2);"><svg viewBox="0 0 24 24" fill="none" stroke="#7A8FA6" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg></div><div class="lr-body"><div class="lr-title">Notifications</div></div><div class="lr-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg></div></div>
+      <div class="lr" style="border-bottom:none;" onclick="go('s-onboard')"><div class="lr-icon" style="background:var(--red-pale);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></div><div class="lr-body"><div class="lr-title" style="color:var(--red);">Sign Out</div></div></div>
+    </div>
+    <div class="vsp"></div>
+  </div>
+  <div class="nbar">
+    <div class="nbi" onclick="go('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12L12 3l9 9M5 10v10h5v-6h4v6h5V10"/></svg><span>Home</span></div>
+    <div class="nbi" onclick="go('s-schedule')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Schedule</span></div>
+    <div class="nbi" onclick="go('s-book1')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg><span>Book</span></div>
+    <div class="nbi" onclick="go('s-office')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M9 21V9l6-4v16M3 7l6-4"/></svg><span>Office</span></div>
+    <div class="nbi on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div>
+  </div>
+</div>
+
+<!-- ══ EDIT PROFILE ══ -->
+<div class="sp" id="s-edit-profile">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-i">●●● WiFi 🔋</div></div>
+  <div class="nhdr"><button class="back" onclick="go('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="nhdr-title">Edit Profile</span><button class="btn bg bsm" onclick="saveProfile()" style="font-size:13px;padding:6px 12px;">Save</button></div>
+  <div class="scrl" style="padding:20px;">
+    <div class="pg-title mb10">Update Your Info</div>
+    <p class="pg-sub mb20">You can update your contact details. To change name or date of birth, contact the office.</p>
+    <div class="fld"><label>Email Address</label><input id="edit-email"/></div>
+    <div class="fld"><label>Phone Number</label><input id="edit-phone"/></div>
+    <div class="fld"><label>Street Address</label><input id="edit-street"/></div>
+    <div class="fld"><label>City</label><input id="edit-city"/></div>
+    <div class="fld"><label>Province</label><select id="edit-province"><option>Ontario</option><option>Quebec</option><option>British Columbia</option><option>Alberta</option><option>Manitoba</option></select></div>
+    <div class="fld"><label>Postal Code</label><input id="edit-postal"/></div>
+    <div class="notice n-amber mb16">🔒 Name and date of birth can only be changed by contacting the office.</div>
+    <button class="btn bp" onclick="saveProfile()">Save Changes</button>
+    <div class="vsp"></div>
+  </div>
+</div>
+
+</div><!-- /phone-screen -->
+</div><!-- /phone-shell -->
+
+<!-- SHORTCUT BAR -->
+<div class="sc-bar">
+  <button class="scb" onclick="go('s-onboard')">🏠 Onboarding</button>
+  <button class="scb" onclick="go('s-reg1')">📝 Register</button>
+  <button class="scb" onclick="go('s-home')">🏡 Home</button>
+  <button class="scb" onclick="go('s-notifs')">🔔 Notifications</button>
+  <button class="scb" onclick="go('s-schedule')">🗓️ Schedule</button>
+  <button class="scb" onclick="openDetail(0)">📋 Appt Detail</button>
+  <button class="scb" onclick="openReschedule(0)">🔄 Reschedule</button>
+  <button class="scb" onclick="openCancel(0)">❌ Cancel</button>
+  <button class="scb" onclick="go('s-book1')">📅 Book Step 1</button>
+  <button class="scb" onclick="go('s-office')">🏥 Office Info</button>
+  <button class="scb" onclick="go('s-profile')">👤 Profile</button>
+  <button class="scb" onclick="go('s-edit-profile')">✏️ Edit Profile</button>
+</div>
+</div><!-- /phone-wrap -->
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ── PROFILE STATE ─────────────────────────────────────────────
+const profile = {
+  email:    'olivia.smith@email.com',
+  phone:    '+1 (416) 555-0182',
+  street:   '123 Queen St W',
+  city:     'Toronto',
+  province: 'Ontario',
+  postal:   'M5H 2N2'
+};
+
+function renderProfile() {
+  const addr = `${profile.street}, ${profile.city} ON`;
+  document.getElementById('prof-display-email').textContent   = profile.email;
+  document.getElementById('prof-display-phone').textContent   = profile.phone;
+  document.getElementById('prof-display-address').textContent = addr;
+  // full name row stays static (read-only — office only)
+}
+
+function openEditProfile() {
+  // populate inputs from current state before showing
+  document.getElementById('edit-email').value    = profile.email;
+  document.getElementById('edit-phone').value    = profile.phone;
+  document.getElementById('edit-street').value   = profile.street;
+  document.getElementById('edit-city').value     = profile.city;
+  document.getElementById('edit-postal').value   = profile.postal;
+  const sel = document.getElementById('edit-province');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === profile.province || sel.options[i].text === profile.province) {
+      sel.selectedIndex = i; break;
+    }
+  }
+  go('s-edit-profile');
+}
+
+function saveProfile() {
+  // read values from inputs
+  const email  = document.getElementById('edit-email').value.trim();
+  const phone  = document.getElementById('edit-phone').value.trim();
+  const street = document.getElementById('edit-street').value.trim();
+  const city   = document.getElementById('edit-city').value.trim();
+  const postal = document.getElementById('edit-postal').value.trim();
+  const prov   = document.getElementById('edit-province');
+  const province = prov.options[prov.selectedIndex].text;
+
+  // basic validation — don't save blanks
+  if (email)  profile.email    = email;
+  if (phone)  profile.phone    = phone;
+  if (street) profile.street   = street;
+  if (city)   profile.city     = city;
+  if (postal) profile.postal   = postal;
+  if (province) profile.province = province;
+
+  renderProfile();
+  go('s-profile');
+}
+
+// ── SHARED STATE ──────────────────────────────────────────────
+const DENTISTS = {
+  ec: { name: 'Dr. Emily Chen',  role: 'General Dentist',    initials: 'EC', bg:'#DBEAFE', fg:'#1D4ED8' },
+  ml: { name: 'Dr. Marcus Lee',  role: 'Orthodontist',       initials: 'ML', bg:'#D1FAE5', fg:'#065F46' },
+  sr: { name: 'Dr. Sofia Rossi', role: 'Pediatric Dentist',  initials: 'SR', bg:'#FEF3C7', fg:'#78350F' }
+};
+
+// Pre-existing appointments
+const appointments = [
+  { id:0, type:'Cleaning & Check-up', dentist:'ec', date:'Thu, June 5', day:5, month:5, year:2026, time:'9:00 AM', status:'confirmed' },
+  { id:1, type:'X-Ray & Consultation', dentist:'ml', date:'Tue, Jul 2',  day:2,  month:6, year:2026, time:'2:00 PM', status:'pending' }
+];
+let nextId = 2;
+let currentDetail = 0;
+
+// booking state
+let selectedDent = 'ec';
+let bookMonth = 5; // 0-indexed (June=5)
+let bookYear = 2026;
+let bookDay = null;
+let bookTime = '10:00 AM';
+
+let rsMonth = 5;
+let rsYear = 2026;
+let rsDay = null;
+let rsTime = '9:00 AM';
+let schedMonth = 5;
+let schedYear = 2026;
+
+// ── NAVIGATION ────────────────────────────────────────────────
+function go(id) {
+  document.querySelectorAll('#ps .sp').forEach(p => p.classList.remove('active'));
+  const t = document.getElementById(id);
+  if (t) { t.classList.add('active'); const s = t.querySelector('.scrl'); if (s) s.scrollTop = 0; }
+  if (id === 's-home') renderHome();
+  if (id === 's-schedule') renderSchedule();
+  if (id === 's-profile') renderProfile();
+}
+
+// ── RENDER APPOINTMENT CARD HTML ──────────────────────────────
+function badgeHtml(status) {
+  switch(status) {
+    case 'confirmed':      return '<span class="badge bg-green">● Confirmed</span>';
+    case 'pending':        return '<span class="badge bg-amber">● Pending Confirmation</span>';
+    case 'pending-cancel': return '<span class="badge bg-red">● Pending Cancellation</span>';
+    case 'pending-resched':return '<span class="badge bg-purple">● Pending Reschedule</span>';
+    default: return '';
+  }
+}
+
+function apptCardHtml(a, idx) {
+  const d = DENTISTS[a.dentist];
+  const iconColor = a.status === 'confirmed' ? 'var(--blue)' : a.status === 'pending' ? 'var(--amber)' : a.status === 'pending-cancel' ? 'var(--red)' : 'var(--purple)';
+  const iconBg    = a.status === 'confirmed' ? 'var(--blue-pale)' : a.status === 'pending' ? 'var(--amber-pale)' : a.status === 'pending-cancel' ? 'var(--red-pale)' : 'var(--purple-pale)';
+  let dateStr = a.date;
+  if (a.status === 'pending-resched' && a.newDate) dateStr = a.newDate + ' <span style="text-decoration:line-through;opacity:.5;">'+a.date+'</span>';
+  return `<div class="ar" onclick="openDetail(${idx})">
+    <div class="ar-icon" style="background:${iconBg};">
+      <svg viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    </div>
+    <div class="ar-body">
+      <div class="ar-title">${a.type}</div>
+      <div class="ar-meta">${d.name} · ${dateStr}<br>${a.status==='pending-resched'&&a.newTime ? a.newTime : a.time} · 45 min</div>
+      ${badgeHtml(a.status)}
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#D5E0ED" stroke-width="2" style="width:18px;flex-shrink:0;margin-top:6px;"><path d="M9 18l6-6-6-6"/></svg>
+  </div>`;
+}
+
+// ── HOME ──────────────────────────────────────────────────────
+function renderHome() {
+  const list = document.getElementById('home-appt-list');
+  list.innerHTML = appointments.map((a,i) => apptCardHtml(a,i)).join('');
+  // update hero with first appointment
+  const a = appointments[0];
+  if (a) {
+    document.getElementById('hh-title').textContent = DENTISTS[a.dentist].name;
+    let sub = `${a.date} · ${a.time} · ${a.type}`;
+    if (a.status === 'pending-resched' && a.newDate) sub = `${a.newDate} · ${a.newTime||a.time} · ${a.type} (reschedule pending)`;
+    if (a.status === 'pending-cancel') sub = `${a.date} · ${a.time} · ${a.type} (cancellation pending)`;
+    document.getElementById('hh-sub').textContent = sub;
+  }
+}
+
+// ── SCHEDULE CALENDAR ─────────────────────────────────────────
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const SHORT_DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+function apptDaysInMonth(month, year) {
+  return appointments.filter(a => a.month === month && a.year === year).map(a => a.day);
+}
+
+function renderCalGrid(containerId, month, year, selectedDay, onClickDay, blockedBefore) {
+  const grid = document.getElementById(containerId);
+  const label = containerId === 'sched-cal-grid' ? 'sched-month-label' :
+                containerId === 'book-cal-grid'  ? 'book-month-label'  : 'rs-month-label';
+  document.getElementById(label).textContent = `${MONTH_NAMES[month]} ${year}`;
+
+  const apptDays = apptDaysInMonth(month, year);
+  const firstDow = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const today = (month === 5 && year === 2026) ? 5 : -1; // prototype: today = June 5 2026
+
+  let html = SHORT_DAYS.map(d => `<div class="cal-dl">${d}</div>`).join('');
+  for (let i=0; i<firstDow; i++) html += '<div class="cal-d empty"></div>';
+  for (let d=1; d<=daysInMonth; d++) {
+    const hasAppt = apptDays.includes(d);
+    const isToday = (d === today);
+    const isSelected = (d === selectedDay);
+    const isBlocked = blockedBefore && d <= blockedBefore;
+    let cls = 'cal-d';
+    if (isBlocked) cls += ' disabled';
+    else if (isToday) cls += ' today';
+    else if (isSelected) cls += ' sel';
+    if (hasAppt && !isBlocked) cls += ' has-appt';
+    const click = isBlocked ? '' : `onclick="${onClickDay}(${d},${month},${year})"`;
+    html += `<div class="${cls}" ${click}>${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function renderSchedule() {
+  renderCalGrid('sched-cal-grid', schedMonth, schedYear, null, 'schedDayClick', null);
+  const list = document.getElementById('sched-appt-list');
+  list.innerHTML = appointments.map((a,i) => apptCardHtml(a,i)).join('');
+}
+
+function changeSchedMonth(d) {
+  schedMonth += d;
+  if (schedMonth < 0) { schedMonth = 11; schedYear--; }
+  if (schedMonth > 11) { schedMonth = 0; schedYear++; }
+  renderCalGrid('sched-cal-grid', schedMonth, schedYear, null, 'schedDayClick', null);
+}
+
+function schedDayClick(day, month, year) {
+  // find appointment on that day
+  const idx = appointments.findIndex(a => a.day===day && a.month===month && a.year===year);
+  if (idx >= 0) { openDetail(idx); }
+  else {
+    // clicking a free day goes to book with that date pre-selected
+    bookDay = day; bookMonth = month; bookYear = year;
+    renderCalGrid('book-cal-grid', bookMonth, bookYear, bookDay, 'bookDayClick', 5);
+    document.getElementById('book-slots-label').textContent = `Available Times — ${MONTH_NAMES[bookMonth].slice(0,3)} ${bookDay}`;
+    go('s-book2');
+  }
+}
+
+// ── BOOK CALENDAR ─────────────────────────────────────────────
+function changeBookMonth(d) {
+  bookMonth += d;
+  if (bookMonth < 0) { bookMonth = 11; bookYear--; }
+  if (bookMonth > 11) { bookMonth = 0; bookYear++; }
+  renderCalGrid('book-cal-grid', bookMonth, bookYear, bookDay, 'bookDayClick', 5);
+}
+
+function bookDayClick(day, month, year) {
+  bookDay = day; bookMonth = month; bookYear = year;
+  renderCalGrid('book-cal-grid', bookMonth, bookYear, bookDay, 'bookDayClick', 5);
+  document.getElementById('book-slots-label').textContent = `Available Times — ${MONTH_NAMES[month].slice(0,3)} ${day}`;
+}
+
+// ── RESCHEDULE CALENDAR ───────────────────────────────────────
+function changeRsMonth(d) {
+  rsMonth += d;
+  if (rsMonth < 0) { rsMonth = 11; rsYear--; }
+  if (rsMonth > 11) { rsMonth = 0; rsYear++; }
+  renderCalGrid('rs-cal-grid', rsMonth, rsYear, rsDay, 'rsDayClick', null);
+}
+
+function rsDayClick(day, month, year) {
+  rsDay = day; rsMonth = month; rsYear = year;
+  renderCalGrid('rs-cal-grid', rsMonth, rsYear, rsDay, 'rsDayClick', null);
+}
+
+// ── DENTIST SELECTION ─────────────────────────────────────────
+function selectDent(key) {
+  selectedDent = key;
+  ['ec','ml','sr'].forEach(k => {
+    document.getElementById('dc-'+k).classList.toggle('on', k===key);
+    document.getElementById('ck-'+k).style.display = k===key ? '' : 'none';
+  });
+  document.getElementById('book3-dentist').textContent = DENTISTS[key].name;
+}
+
+// ── SLOT SELECTION (delegated) ────────────────────────────────
+document.addEventListener('click', function(e) {
+  const slot = e.target.closest('.slot:not(.off)');
+  if (!slot) return;
+  const group = slot.closest('.slots');
+  group.querySelectorAll('.slot').forEach(s => s.classList.remove('on'));
+  slot.classList.add('on');
+  const slotText = slot.textContent.trim();
+  if (group.id === 'book-slots') bookTime = slotText;
+  if (group.id === 'rs-slots') rsTime = slotText;
+});
+
+// ── OPEN DETAIL ───────────────────────────────────────────────
+function openDetail(idx) {
+  currentDetail = idx;
+  const a = appointments[idx];
+  const d = DENTISTS[a.dentist];
+  // header card
+  document.getElementById('detail-status-label').textContent = a.status === 'confirmed' ? 'Confirmed Appointment' : a.status === 'pending' ? 'Pending Confirmation' : a.status === 'pending-cancel' ? 'Pending Cancellation' : 'Pending Reschedule';
+  document.getElementById('detail-type').textContent = a.type;
+  document.getElementById('detail-date').textContent = (a.status === 'pending-resched' && a.newDate) ? a.newDate : a.date;
+  document.getElementById('detail-time').textContent = (a.status === 'pending-resched' && a.newTime) ? a.newTime : a.time;
+  // badge
+  const bm = document.getElementById('detail-badge-main');
+  bm.className = 'badge';
+  if (a.status === 'confirmed')       { bm.classList.add('bg-green');  bm.textContent = '✓ Confirmed'; }
+  if (a.status === 'pending')         { bm.classList.add('bg-amber');  bm.textContent = '● Pending Confirmation'; }
+  if (a.status === 'pending-cancel')  { bm.classList.add('bg-red');    bm.textContent = '● Pending Cancellation'; }
+  if (a.status === 'pending-resched') { bm.classList.add('bg-purple'); bm.textContent = '● Pending Reschedule'; }
+  // pending note
+  const pn = document.getElementById('detail-pending-note');
+  if (a.status === 'pending-resched' && a.newDate) {
+    pn.style.display = '';
+    pn.textContent = `Requested: ${a.newDate} · ${a.newTime||a.time} (office will confirm)`;
+  } else if (a.status === 'pending-cancel') {
+    pn.style.display = '';
+    pn.textContent = 'Cancellation requested — awaiting office confirmation.';
+  } else {
+    pn.style.display = 'none';
+  }
+  // info rows
+  document.getElementById('detail-dentist').textContent = d.name;
+  const si = document.getElementById('detail-status-icon');
+  const st = document.getElementById('detail-status-text');
+  if (a.status === 'confirmed') {
+    si.style.background = 'var(--green-pale)';
+    si.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+    st.textContent = 'Confirmed by Office';
+  } else if (a.status === 'pending') {
+    si.style.background = 'var(--amber-pale)';
+    si.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>';
+    st.textContent = 'Pending Confirmation';
+  } else if (a.status === 'pending-cancel') {
+    si.style.background = 'var(--red-pale)';
+    si.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>';
+    st.textContent = 'Pending Cancellation';
+  } else {
+    si.style.background = 'var(--purple-pale)';
+    si.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><path d="M4 4h16v2a8 8 0 010 12v2H4v-2a8 8 0 010-12V4z" opacity=".2"/><path d="M12 8v4l3 3"/></svg>';
+    st.textContent = 'Pending Reschedule';
+  }
+  // hide manage buttons if already pending-cancel
+  const btns = document.getElementById('detail-btns');
+  if (a.status === 'pending-cancel') {
+    btns.innerHTML = '<div class="notice n-amber" style="margin-bottom:0;">Your cancellation request is being processed by the office.</div>';
+  } else {
+    btns.innerHTML = `<button class="btn bs" onclick="openReschedule(${idx})">Request a Change</button><button class="btn bd" onclick="openCancel(${idx})">Cancel Appointment</button>`;
+  }
+  go('s-appt-detail');
+}
+
+// ── OPEN CANCEL ───────────────────────────────────────────────
+function openCancel(idx) {
+  currentDetail = idx;
+  const a = appointments[idx];
+  document.getElementById('cancel-appt-info').textContent = `${a.type} · ${a.date} · ${a.time}`;
+  go('s-cancel');
+}
+
+function confirmCancel() {
+  appointments[currentDetail].status = 'pending-cancel';
+  renderHome();
+  renderSchedule();
+  go('s-cancel-success');
+}
+
+// ── OPEN RESCHEDULE ───────────────────────────────────────────
+function openReschedule(idx) {
+  currentDetail = idx;
+  const a = appointments[idx];
+  document.getElementById('resched-current').textContent = `${a.date} · ${a.time}`;
+  document.getElementById('resched-dentist').textContent = `${DENTISTS[a.dentist].name} · ${a.type}`;
+  rsDay = null; rsMonth = 5; rsYear = 2026;
+  renderCalGrid('rs-cal-grid', rsMonth, rsYear, rsDay, 'rsDayClick', null);
+  go('s-reschedule');
+}
+
+function confirmReschedule() {
+  const a = appointments[currentDetail];
+  const newDateStr = rsDay
+    ? `${MONTH_NAMES[rsMonth].slice(0,3)} ${rsDay}, ${rsYear}`
+    : 'Jun 12, 2026';
+  a.newDate = newDateStr;
+  a.newTime = rsTime;
+  a.status = 'pending-resched';
+  document.getElementById('rs-success-info').textContent = `${newDateStr} · ${rsTime} — ${DENTISTS[a.dentist].name}`;
+  renderHome();
+  renderSchedule();
+  go('s-reschedule-success');
+}
+
+// ── SUBMIT BOOKING ────────────────────────────────────────────
+function submitBooking() {
+  const d = DENTISTS[selectedDent];
+  const visitType = document.querySelector('#s-book3 select').value || 'Cleaning & Check-up';
+  const dayNum = bookDay || 12;
+  const mon = bookMonth;
+  const yr  = bookYear;
+  // figure day-of-week label
+  const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(yr, mon, dayNum).getDay()];
+  const dateStr = `${dow}, ${MONTH_NAMES[mon].slice(0,3)} ${dayNum}`;
+
+  const newAppt = {
+    id: nextId++,
+    type: visitType,
+    dentist: selectedDent,
+    date: dateStr,
+    day: dayNum, month: mon, year: yr,
+    time: bookTime,
+    status: 'pending'
+  };
+  appointments.push(newAppt);
+
+  document.getElementById('book3-dentist').textContent = d.name;
+  document.getElementById('book3-datetime').textContent = `${dateStr} · ${bookTime}`;
+  document.getElementById('book-success-info').textContent = `${d.name} · ${dateStr} · ${bookTime}`;
+  renderHome();
+  renderSchedule();
+  go('s-book-success');
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+(function init() {
+  renderProfile();
+  renderCalGrid('book-cal-grid', bookMonth, bookYear, bookDay, 'bookDayClick', 5);
+  renderCalGrid('rs-cal-grid', rsMonth, rsYear, rsDay, 'rsDayClick', null);
+  renderCalGrid('sched-cal-grid', schedMonth, schedYear, null, 'schedDayClick', null);
+  renderHome();
+  renderSchedule();
+})();
+</script>
+</body>
+</html>
